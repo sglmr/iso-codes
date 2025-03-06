@@ -8,37 +8,30 @@
   <meta name="color-scheme" content="light dark">
 
   <title>ISO 3166-1 Country Codes</title>
-  <meta name="description" content="A simple baker's percentage dough calculator.">
+  <meta name="description" content="An interactive table for ISO 3166-1 country codes.">
 
   <!-- Pico.css -->
   <link rel="stylesheet" href="/pico.green.css">
-  <!-- DataTables CSS -->
-  <link rel="stylesheet" href="/jquery.dataTables.css">
-  <!-- Override datatable CSS -->
-  <style>
-    /* Align the table search bar to the left side of the page */
-    .dataTables_filter {
-      float: left !important;
-      text-align: left !important;
-    }
-  </style>
+  <!-- Grid.js CSS -->
+  <link rel="stylesheet" href="/mermaid.min.css">
 </head>
 
-<body style="max-width: 70ch; margin: auto;">
+<main class="container" style="max-width: 800px; margin: auto;">
   <!-- Header -->
   <header>
     <hgroup>
       <h1>ISO 3166-1 Country Codes</h1>
-      <p>This is the <a href="https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes">Wikipedia Country Codes</a>
-        table
-        with a little <a href="https://datatables.net/">DataTables.</a></p>
+      <p>A more interactive <a href="https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes">Wikipedia</a>
+        ISO 3166-1 country codes table</p>
     </hgroup>
+  </header>
+  <!-- ./ Header -->
 
-    <!-- ./ Header -->
 
-    <!-- Main -->
-
-    <main>
+  <!-- Main -->
+  <main class="container">
+    <section style="font-size:75%;">
+      <div id="gridjs-table"></div>
       <table id="country-table">
         <thead>
           <tr>
@@ -1545,37 +1538,108 @@
           </tr>
         </tbody>
       </table>
-    </main>
+    </section>
+  </main>
 
-    <!-- jQuery -->
-    <script type="text/javascript" src="/jquery-3.7.0.min.js"></script>
+  <!-- Grid.js JS -->
+  <script type="text/javascript" src="/gridjs.umd.js"></script>
 
-    <!-- DataTables JS -->
-    <script type="text/javascript" src="/jquery.dataTables.js"></script>
+  <!-- Grid.js configuration -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Initialize Grid.js with the existing table
+      const grid = new gridjs.Grid({
+        from: document.getElementById('country-table'),
 
-    <!-- Init DataTables on the table -->
-    <script type="text/javascript">
-      $(document).ready(function () {
-        $('#country-table').DataTable({
-          // Basic configuration
-          paging: false,          // Removes pagination completely
-          lengthChange: false,    // Removes the length menu
-          ordering: true,
-          searching: true,
-          responsive: true,
-          columns: [
-            { title: 'Country' },
-            { title: 'A-2' },
-            { title: 'A-3' },
-            { title: 'Num' }
-          ],
-          initComplete: function () {
-            // Focus on the search input when DataTable finishes loading
-            $('.dataTables_filter input').focus();
-          }
-        });
+        sort: true,
+        search: {
+          enabled: true
+        },
+        className: {
+          container: 'gridjs-container',
+          table: 'gridjs-table',
+          search: 'gridjs-search',
+          pagination: 'gridjs-pagination'
+        }
+      }).render(document.getElementById('gridjs-table'));
+
+      // Additional search functionality
+      document.getElementById('search').addEventListener('input', function (e) {
+        grid.search(e.target.value);
       });
-    </script>
-</body>
+    });
+  </script>
+  <!-- ./ Grid.js Configuration -->
+
+  <!-- Click cell to copy JS -->
+  <script>
+    // Add CSS for the tooltip
+    const style = document.createElement('style');
+    style.textContent = `
+  .copy-tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+  }
+  .copy-tooltip.show {
+    opacity: 1;
+  }
+`;
+    document.head.appendChild(style);
+
+    // Create tooltip element
+    const tooltip = document.createElement('div');
+    tooltip.className = 'copy-tooltip';
+    tooltip.textContent = 'Copied!';
+    document.body.appendChild(tooltip);
+
+    // Click event listener for table cells
+    document.addEventListener('click', function (event) {
+      if (event.target.tagName === 'TD') {
+        const cell = event.target;
+        const text = cell.textContent.trim();
+
+        // Copy to clipboard
+        navigator.clipboard.writeText(text)
+          .then(() => {
+            // Visual feedback on the cell
+            const originalBg = cell.style.backgroundColor;
+            cell.style.backgroundColor = '#e6ffe6';
+
+            setTimeout(() => {
+              cell.style.backgroundColor = originalBg;
+            }, 300);
+
+            // Position tooltip near the mouse cursor
+            tooltip.style.top = `${event.clientY + window.scrollY - 10}px`;
+            tooltip.style.left = `${event.clientX + window.scrollX + 10}px`;
+            tooltip.classList.add('show');
+
+            // Hide tooltip after delay
+            setTimeout(() => {
+              tooltip.classList.remove('show');
+            }, 1500);
+
+            console.log('Copied to clipboard: ' + text);
+          })
+          .catch(err => {
+            console.error('Failed to copy: ', err);
+          });
+      }
+    });
+  </script>
+  <!-- ./ click to copy JS -->
+  <footer class="container" style="font-size:.66em">
+    by Stephen Gilmore @ <a href="https://sglmr.com">https://sglmr.com</a>
+  </footer>
+
+  </body>
 
 </html>
